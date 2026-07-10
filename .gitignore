@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Core API routes (closed source)
+/src/app/api/
+
+# Private libs (closed source)
+/src/lib/groq.ts
+/src/lib/resend.ts
+/src/lib/stripe.ts
+/src/lib/supabase-server.ts

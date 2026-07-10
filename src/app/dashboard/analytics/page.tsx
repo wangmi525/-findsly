@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
 
       <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-5 text-center">
         <p className="text-sm font-semibold text-gray-500">Data export is not available</p>
-        <p className="text-xs text-gray-400">LeadFlow contacts are platform-exclusive for security and compliance.</p>
+        <p className="text-xs text-gray-400">Findsly contacts are platform-exclusive for security and compliance.</p>
       </div>
     </div>
   );

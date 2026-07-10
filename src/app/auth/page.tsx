@@ -58,7 +58,7 @@ export default function AuthPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
             <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center"><Zap className="h-5 w-5 text-white" /></div>
-            <span className="text-xl font-bold text-gray-900">LeadFlow</span>
+            <span className="text-xl font-bold text-gray-900">Findsly</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">{isLogin ? "Welcome back" : "Create your account"}</h1>
           <p className="mt-1 text-sm text-gray-500">{isLogin ? "Sign in to continue" : "Start finding customers for free"}</p>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LeadFlow - AI Customer Discovery & Outreach Platform",
+  title: "Findsly - AI Customer Discovery & Outreach Platform",
   description: "Describe your ideal customer. AI finds their email, WhatsApp, Instagram, and more. Reach them all from one platform.",
 };
 

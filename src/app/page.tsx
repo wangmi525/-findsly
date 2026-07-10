@@ -39,7 +39,7 @@ export default function HomePage() {
             <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
               <Zap className="h-5 w-5 text-white" />
             </div>
-            LeadFlow
+            Findsly
           </Link>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900">Features</a>
@@ -82,7 +82,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900">All-in-One Customer Growth Platform</h2>
-            <p className="mt-4 text-lg text-gray-500">Replace 4 tools with 1. Discovery, CRM, Pipeline, and Outreach — all in LeadFlow.</p>
+            <p className="mt-4 text-lg text-gray-500">Replace 4 tools with 1. Discovery, CRM, Pipeline, and Outreach — all in Findsly.</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {[
@@ -165,8 +165,8 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Frequently Asked Questions</h2>
           {[
-            { q: "How does LeadFlow find contact information?", a: "LeadFlow searches 8 public data sources — including Google Maps, LinkedIn public profiles, Instagram, YouTube, Twitter/X, Reddit, TikTok, and Facebook Pages — to find publicly available contact information. We then extract email addresses from business websites and verify them." },
-            { q: "Can I export or download my contacts?", a: "No. LeadFlow contacts are platform-exclusive for security and compliance. You can use them within the platform for outreach, CRM, and pipeline management, but data cannot be exported. Contacts you manually uploaded via CSV can be exported." },
+            { q: "How does Findsly find contact information?", a: "Findsly searches 8 public data sources — including Google Maps, LinkedIn public profiles, Instagram, YouTube, Twitter/X, Reddit, TikTok, and Facebook Pages — to find publicly available contact information. We then extract email addresses from business websites and verify them." },
+            { q: "Can I export or download my contacts?", a: "No. Findsly contacts are platform-exclusive for security and compliance. You can use them within the platform for outreach, CRM, and pipeline management, but data cannot be exported. Contacts you manually uploaded via CSV can be exported." },
             { q: "Is WhatsApp/Instagram cold outreach allowed?", a: "WhatsApp supports business-initiated template messages through Meta's official Cloud API. Instagram supports pre-filled DM links. We recommend always following platform-specific policies and anti-spam laws." },
             { q: "What happens to my data if I cancel?", a: "Your contacts remain accessible in read-only mode for 30 days after cancellation. After 30 days, all data is permanently deleted. You can reactivate your subscription anytime within those 30 days to restore full access." },
           ].map((faq, i) => (
@@ -185,7 +185,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Zap className="h-4 w-4" /> LeadFlow © 2026
+              <Zap className="h-4 w-4" /> Findsly © 2026
             </div>
             <div className="flex gap-6 text-sm text-gray-400">
               <a href="#" className="hover:text-gray-600">Privacy</a>

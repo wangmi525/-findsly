@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-gray-50">
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200 bg-white transition-transform md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-14 items-center gap-2 border-b border-gray-100 px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-gray-900"><div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center"><Zap className="h-4 w-4 text-white" /></div>LeadFlow</Link>
+          <Link href="/" className="flex items-center gap-2 font-bold text-gray-900"><div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center"><Zap className="h-4 w-4 text-white" /></div>Findsly</Link>
           <button className="ml-auto md:hidden" onClick={() => setMobileOpen(false)}><X className="h-5 w-5" /></button>
         </div>
         <nav className="flex flex-col gap-1 p-3">
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 md:ml-64">
         <div className="md:hidden flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3">
           <button onClick={() => setMobileOpen(true)} className="rounded-lg p-2 hover:bg-gray-100"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
-          <span className="font-bold text-gray-900">LeadFlow</span>
+          <span className="font-bold text-gray-900">Findsly</span>
         </div>
         <div className="p-6">{children}</div>
       </main>
