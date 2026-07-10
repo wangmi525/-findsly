@@ -49,3 +49,5 @@ next-env.d.ts
 /src/lib/resend.ts
 /src/lib/stripe.ts
 /src/lib/supabase-server.ts
+
+.vercel
