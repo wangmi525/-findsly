@@ -41,10 +41,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Premium API routes (closed source)
-/src/app/api/ai/score
-/src/app/api/ai/predict
-/src/app/api/deals
-/src/app/api/sequences
-/src/app/api/team
-/src/app/api/revenue
+# Core API routes (closed source)
+/src/app/api/
+
+# Core libs (closed source)
+/src/lib/groq.ts
+/src/lib/resend.ts
+/src/lib/stripe.ts
+/src/lib/supabase-server.ts
