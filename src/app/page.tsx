@@ -64,7 +64,7 @@ export default function HomePage() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link href="/auth" className="rounded-xl bg-blue-600 px-8 py-4 text-base font-semibold text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20">
-              Start Free 鈥?No Credit Card
+              Start Free - No Credit Card
             </Link>
             <a href="#how-it-works" className="rounded-xl border-2 border-gray-200 bg-white px-8 py-4 text-base font-semibold text-gray-700 hover:border-gray-300">
               See How It Works
@@ -78,7 +78,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900">All-in-One Customer Growth Platform</h2>
-            <p className="mt-4 text-lg text-gray-500">Replace 4 tools with 1. Discovery, CRM, Pipeline, and Outreach 鈥?all in Findsly.</p>
+            <p className="mt-4 text-lg text-gray-500">Replace 4 tools with 1. Discovery, CRM, Pipeline, and Outreach -all in Findsly.</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {[
@@ -107,8 +107,8 @@ export default function HomePage() {
           <div className="grid gap-8 md:grid-cols-3">
             {[
               { step: "1", title: "Describe Your Customer", desc: "Tell us who you're looking for. 'Yoga studio owners in California' or 'E-commerce CEOs in Europe'. AI handles the rest.", icon: Globe },
-              { step: "2", title: "AI Finds Them Everywhere", desc: "Our engine searches 8 sources simultaneously 鈥?Google Maps, LinkedIn, social media, and more 鈥?to find complete contact info.", icon: Search },
-              { step: "3", title: "Reach Out Instantly", desc: "AI generates personalized messages for each channel. Send via email, WhatsApp, Telegram 鈥?all from one dashboard.", icon: Send },
+              { step: "2", title: "AI Finds Them Everywhere", desc: "Our engine searches 8 sources simultaneously -Google Maps, LinkedIn, social media, and more -to find complete contact info.", icon: Search },
+              { step: "3", title: "Reach Out Instantly", desc: "AI generates personalized messages for each channel. Send via email, WhatsApp, Telegram -all from one dashboard.", icon: Send },
             ].map((s, i) => (
               <div key={i} className="relative text-center">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">{s.step}</div>
@@ -161,7 +161,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Frequently Asked Questions</h2>
           {[
-            { q: "How does Findsly find contact information?", a: "Findsly searches 8 public data sources 鈥?including Google Maps, LinkedIn public profiles, Instagram, YouTube, Twitter/X, Reddit, TikTok, and Facebook Pages 鈥?to find publicly available contact information. We then extract email addresses from business websites and verify them." },
+            { q: "How does Findsly find contact information?", a: "Findsly searches 8 public data sources -including Google Maps, LinkedIn public profiles, Instagram, YouTube, Twitter/X, Reddit, TikTok, and Facebook Pages -to find publicly available contact information. We then extract email addresses from business websites and verify them." },
             { q: "Can I export or download my contacts?", a: "No. Findsly contacts are platform-exclusive for security and compliance. You can use them within the platform for outreach, CRM, and pipeline management, but data cannot be exported. Contacts you manually uploaded via CSV can be exported." },
             { q: "Is WhatsApp/Instagram cold outreach allowed?", a: "WhatsApp supports business-initiated template messages through Meta's official Cloud API. Instagram supports pre-filled DM links. We recommend always following platform-specific policies and anti-spam laws." },
             { q: "What happens to my data if I cancel?", a: "Your contacts remain accessible in read-only mode for 30 days after cancellation. After 30 days, all data is permanently deleted. You can reactivate your subscription anytime within those 30 days to restore full access." },
