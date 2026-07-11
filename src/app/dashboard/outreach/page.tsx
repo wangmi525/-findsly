@@ -1,13 +1,18 @@
 "use client";
 import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
-import { Send, Mail, MessageCircle, Zap, Loader2, Settings, Check } from "lucide-react";
+import { Send, Mail, MessageCircle, Zap, Loader2, Settings, Reply } from "lucide-react";
 
 const CHANNELS = [
   { id: "email", label: "Email", icon: Mail, desc: "通过 Resend API 发送", hasChannel: (c: any) => !!c.email },
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, desc: "通过 WhatsApp API 发送", hasChannel: (c: any) => !!c.phone },
   { id: "telegram", label: "Telegram", icon: Send, desc: "通过 Telegram Bot 发送", hasChannel: (c: any) => !!c.telegram_handle },
 ];
+
+function formatTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
 
 export default function OutreachPage() {
   const [collections, setCollections] = useState<any[]>([]);
@@ -22,6 +27,14 @@ export default function OutreachPage() {
   const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState({ whatsapp_token: "", whatsapp_phone: "", telegram_bot_token: "" });
 
+  // Conversation state
+  const [conversation, setConversation] = useState<any>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<any>(null);
+  const [replyLoading, setReplyLoading] = useState(false);
+
   useEffect(() => {
     authFetch("/api/collections").then(r => r.json()).then(d => setCollections(d.data || []));
     authFetch("/api/profile").then(r => r.json()).then(d => {
@@ -32,12 +45,13 @@ export default function OutreachPage() {
   async function loadCollectionContacts(collectionId: string) {
     setSelectedCollection(collectionId);
     setSelected([]);
+    setConversation(null);
+    setMessages([]);
     setMessage(""); setSubject("");
     if (!collectionId) { setAllContacts([]); return; }
     const res = await authFetch("/api/contacts?collection_id=" + collectionId + "&limit=100");
     const d = await res.json();
     const cl = d.data || [];
-    // Load interaction history for each contact
     for (const c of cl) {
       try {
         const ir = await authFetch("/api/contacts/" + c.id);
@@ -48,20 +62,40 @@ export default function OutreachPage() {
     setAllContacts(cl);
   }
 
-  // Filter contacts by channel availability
   const contacts = allContacts.filter(c => {
     const ch = CHANNELS.find(x => x.id === channel);
     return ch ? ch.hasChannel(c) : true;
   });
 
+  async function loadMessages(contact: any) {
+    if (!contact) { setConversation(null); setMessages([]); return; }
+    setLoadingMessages(true);
+    try {
+      const res = await authFetch("/api/messages?contact_id=" + contact.id);
+      const d = await res.json();
+      setConversation(d.contact);
+      setMessages(d.messages || []);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }
+
+  function selectContact(c: any) {
+    const exists = selected.find(x => x.id === c.id);
+    let next: any[];
+    if (exists) {
+      next = selected.filter(x => x.id !== c.id);
+    } else {
+      next = [...selected, c];
+    }
+    setSelected(next);
+    loadMessages(next[0] || null);
+  }
+
   async function saveConfig() {
     await authFetch("/api/profile", { method: "PATCH", body: JSON.stringify(config) });
     setShowConfig(false);
   }
-
-  const toggleContact = (c: any) => {
-    setSelected(s => s.find(x => x.id === c.id) ? s.filter(x => x.id !== c.id) : [...s, c]);
-  };
 
   const generateAI = async () => {
     if (selected.length === 0) return;
@@ -92,8 +126,38 @@ export default function OutreachPage() {
       } catch { failed++; }
     }
     setResult(`已发送 ${sent} 条${failed > 0 ? `，${failed} 条失败` : ""}`);
-    loadCollectionContacts(selectedCollection);
+    await loadCollectionContacts(selectedCollection);
+    if (selected.length > 0) await loadMessages(selected[0]);
     setLoading(false);
+  };
+
+  const sendReply = async () => {
+    if (!replyText.trim() || !conversation) return;
+    setReplyLoading(true);
+    try {
+      const parent = replyingTo || messages[messages.length - 1];
+      const res = await authFetch("/api/send", {
+        method: "POST",
+        body: JSON.stringify({
+          channel: parent?.channel || "email",
+          contact_id: conversation.id,
+          message: replyText,
+          parent_interaction_id: parent?.id,
+          recipient_name: conversation.name,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const d = await res.json();
+      if (d.error) {
+        setResult(`回复失败：${d.error}`);
+      } else {
+        setReplyText("");
+        setReplyingTo(null);
+        await loadMessages(conversation);
+      }
+    } finally {
+      setReplyLoading(false);
+    }
   };
 
   const isEmail = channel === "email";
@@ -164,7 +228,7 @@ export default function OutreachPage() {
             ) : contacts.map(c => {
               const usedChannels = c._channels_used || [];
               return (
-                <button key={c.id} onClick={() => toggleContact(c)} className={`w-full rounded-lg p-2 text-left text-sm transition ${selected.find(x => x.id === c.id) ? "bg-blue-50 border border-blue-200" : "border border-transparent hover:bg-gray-50"}`}>
+                <button key={c.id} onClick={() => selectContact(c)} className={`w-full rounded-lg p-2 text-left text-sm transition ${selected.find(x => x.id === c.id) ? "bg-blue-50 border border-blue-200" : "border border-transparent hover:bg-gray-50"}`}>
                   <p className="font-medium text-gray-900">{c.name}</p>
                   <p className="text-xs text-gray-400">{c.company || ""} {c.title ? "· " + c.title : ""}</p>
                   <div className="mt-1 flex gap-1">
@@ -211,21 +275,77 @@ export default function OutreachPage() {
           {result && <p className="mt-3 text-sm text-green-600">{result}</p>}
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-3 font-semibold text-gray-900">预览</h3>
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            {selected.length === 0 ? (
-              <p className="text-sm text-gray-400">选择联系人后预览消息</p>
-            ) : (
-              <div className="space-y-2 text-sm">
-                <p className="text-xs text-gray-400">收件人: {selected.length} 人</p>
-                <p className="text-xs text-gray-400">渠道: {CHANNELS.find(ch => ch.id === channel)?.label}</p>
-                <p className="text-xs text-green-600">🔒 客户联系方式不会被显示</p>
-                {subject && <p className="font-semibold text-gray-900">{subject}</p>}
-                <p className="whitespace-pre-wrap text-gray-700">{message || "(点击 AI 生成自动生成消息)"}</p>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 flex flex-col h-[600px]">
+          <h3 className="mb-3 font-semibold text-gray-900">对话记录</h3>
+          {!conversation ? (
+            <div className="flex-1 rounded-lg border border-gray-100 bg-gray-50 p-4 flex items-center justify-center">
+              <p className="text-sm text-gray-400">选择一个联系人查看对话</p>
+            </div>
+          ) : (
+            <>
+              <div className="mb-3 border-b border-gray-100 pb-3">
+                <p className="font-semibold text-gray-900">{conversation.name}</p>
+                <p className="text-xs text-gray-400">{conversation.company || ""} {conversation.title ? "· " + conversation.title : ""}</p>
+                <p className="text-xs mt-1">
+                  {conversation.status === "replied" ? <span className="text-green-600">● 已回复</span> : <span className="text-gray-400">○ {conversation.status}</span>}
+                </p>
               </div>
-            )}
-          </div>
+              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                {loadingMessages ? (
+                  <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-gray-400" /></div>
+                ) : messages.length === 0 ? (
+                  <p className="text-center text-sm text-gray-400 py-8">暂无消息</p>
+                ) : messages.map((m: any) => {
+                  const isOutbound = m.direction === "outbound";
+                  return (
+                    <div key={m.id} className={`flex ${isOutbound ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${isOutbound ? "bg-blue-600 text-white rounded-br-none" : "bg-gray-100 text-gray-800 rounded-bl-none"}`}>
+                        <div className="mb-1 flex items-center gap-1.5 text-[10px] opacity-80">
+                          <span className="uppercase">{m.channel}</span>
+                          <span>·</span>
+                          <span>{formatTime(m.created_at)}</span>
+                        </div>
+                        {m.subject ? <p className={`font-semibold mb-1 ${isOutbound ? "text-blue-100" : "text-gray-600"}`}>{m.subject}</p> : null}
+                        <p className="whitespace-pre-wrap">{m.body}</p>
+                        {!isOutbound && (
+                          <button onClick={() => setReplyingTo(m)} className="mt-1.5 flex items-center gap-1 text-[10px] opacity-80 hover:opacity-100">
+                            <Reply className="h-3 w-3" /> 回复
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {conversation && (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  {replyingTo && (
+                    <div className="mb-2 flex items-center gap-2 text-xs text-gray-500">
+                      <Reply className="h-3 w-3" />
+                      回复 {replyingTo.channel} 消息
+                      <button onClick={() => setReplyingTo(null)} className="text-red-500 hover:underline">取消</button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <textarea
+                      value={replyText}
+                      onChange={e => setReplyText(e.target.value)}
+                      placeholder="输入回复..."
+                      rows={2}
+                      className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                    />
+                    <button
+                      onClick={sendReply}
+                      disabled={replyLoading || !replyText.trim()}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+                    >
+                      {replyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

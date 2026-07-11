@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   last_opened TIMESTAMPTZ,
   last_clicked TIMESTAMPTZ,
   data_expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '90 days'),
+  collection_id UUID REFERENCES collections(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS interactions (
   subject TEXT DEFAULT '',
   body TEXT DEFAULT '',
   status TEXT DEFAULT 'sent' CHECK (status IN ('sent', 'delivered', 'opened', 'clicked', 'replied', 'bounced', 'failed')),
+  metadata JSONB DEFAULT '{}',
   opened_at TIMESTAMPTZ,
   clicked_at TIMESTAMPTZ,
   replied_at TIMESTAMPTZ,
@@ -161,6 +163,8 @@ CREATE INDEX IF NOT EXISTS idx_contacts_score ON contacts(score DESC);
 CREATE INDEX IF NOT EXISTS idx_contacts_data_expires ON contacts(data_expires_at);
 CREATE INDEX IF NOT EXISTS idx_interactions_contact ON interactions(contact_id);
 CREATE INDEX IF NOT EXISTS idx_interactions_user ON interactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_interactions_metadata ON interactions USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_contacts_collection ON contacts(collection_id);
 CREATE INDEX IF NOT EXISTS idx_deals_user ON deals(user_id);
 CREATE INDEX IF NOT EXISTS idx_deals_stage ON deals(stage);
 CREATE INDEX IF NOT EXISTS idx_revenue_user ON revenue_logs(user_id);
