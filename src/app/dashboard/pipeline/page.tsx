@@ -10,16 +10,26 @@ const STAGE_COLORS: Record<string, string> = { lead: "bg-gray-100", contacted: "
 export default function PipelinePage() {
   const [deals, setDeals] = useState<any[]>([]);
   const [showNew, setShowNew] = useState(false);
-  const [newDeal, setNewDeal] = useState({ name: "", value: "", stage: "lead", contact_id: "" });
-  const [contacts, setContacts] = useState<any[]>([]);
+  const [newDeal, setNewDeal] = useState({ name: "", value: "", stage: "lead", contact_id: "", contact_name: "" });
+  const [collections, setCollections] = useState<any[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState("");
+  const [collectionContacts, setCollectionContacts] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editValue, setEditValue] = useState("");
 
-  useEffect(() => { loadDeals(); loadContacts(); }, []);
+  useEffect(() => { loadDeals(); loadCollections(); }, []);
 
   async function loadDeals() { const res = await authFetch("/api/deals"); const d = await res.json(); setDeals(d.data || []); }
-  async function loadContacts() { const res = await authFetch("/api/contacts?limit=100"); const d = await res.json(); setContacts(d.data || []); }
+  async function loadCollections() { const res = await authFetch("/api/collections"); const d = await res.json(); setCollections(d.data || []); }
+
+  async function loadCollectionContacts(collectionId: string) {
+    setSelectedCollection(collectionId);
+    if (!collectionId) { setCollectionContacts([]); return; }
+    const res = await authFetch("/api/contacts?collection_id=" + collectionId + "&limit=100");
+    const d = await res.json();
+    setCollectionContacts(d.data || []);
+  }
 
   async function updateStage(dealId: string, stage: string) {
     await authFetch("/api/deals/" + dealId, { method: "PATCH", body: JSON.stringify({ stage }) });
@@ -41,7 +51,7 @@ export default function PipelinePage() {
   async function createDeal(e: React.FormEvent) {
     e.preventDefault();
     const res = await authFetch("/api/deals", { method: "POST", body: JSON.stringify({ ...newDeal, value: Number(newDeal.value) }) });
-    if (res.ok) { setShowNew(false); setNewDeal({ name: "", value: "", stage: "lead", contact_id: "" }); loadDeals(); }
+    if (res.ok) { setShowNew(false); setNewDeal({ name: "", value: "", stage: "lead", contact_id: "", contact_name: "" }); setSelectedCollection(""); setCollectionContacts([]); loadDeals(); }
   }
 
   const activeDeals = deals.filter(d => !["won", "lost"].includes(d.stage));
@@ -83,17 +93,25 @@ export default function PipelinePage() {
       {showNew && (
         <form onSubmit={createDeal} className="mb-6 rounded-xl border border-gray-200 bg-white p-5">
           <h3 className="mb-3 font-semibold text-gray-900">新建交易</h3>
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-3 mb-3">
             <input placeholder="交易名称" value={newDeal.name} onChange={e => setNewDeal({ ...newDeal, name: e.target.value })} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" required />
             <input type="number" placeholder="金额 ($)" value={newDeal.value} onChange={e => setNewDeal({ ...newDeal, value: e.target.value })} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-            <select value={newDeal.contact_id} onChange={e => setNewDeal({ ...newDeal, contact_id: e.target.value })} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
-              <option value="">无联系人</option>
-              {contacts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <select value={selectedCollection} onChange={e => loadCollectionContacts(e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+              <option value="">选择档案</option>
+              {collections.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
             </select>
-            <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">创建</button>
-              <button type="button" onClick={() => setShowNew(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm">取消</button>
+          </div>
+          {selectedCollection && (
+            <div className="mb-3">
+              <select value={newDeal.contact_id} onChange={e => { const c = collectionContacts.find(x => x.id === e.target.value); setNewDeal({ ...newDeal, contact_id: e.target.value, contact_name: c?.name || "" }); }} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                <option value="">选择客户</option>
+                {collectionContacts.map(c => <option key={c.id} value={c.id}>{c.name} ({c.company})</option>)}
+              </select>
             </div>
+          )}
+          <div className="flex gap-2">
+            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">创建</button>
+            <button type="button" onClick={() => { setShowNew(false); setSelectedCollection(""); setCollectionContacts([]); }} className="rounded-lg border border-gray-200 px-4 py-2 text-sm">取消</button>
           </div>
         </form>
       )}
