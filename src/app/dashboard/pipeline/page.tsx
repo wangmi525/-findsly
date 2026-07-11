@@ -50,8 +50,18 @@ export default function PipelinePage() {
 
   async function createDeal(e: React.FormEvent) {
     e.preventDefault();
-    const res = await authFetch("/api/deals", { method: "POST", body: JSON.stringify({ ...newDeal, value: Number(newDeal.value) }) });
-    if (res.ok) { setShowNew(false); setNewDeal({ name: "", value: "", stage: "lead", contact_id: "", contact_name: "" }); setSelectedCollection(""); setCollectionContacts([]); loadDeals(); }
+    try {
+      const res = await authFetch("/api/deals", { method: "POST", body: JSON.stringify({ name: newDeal.name, value: Number(newDeal.value), stage: "lead", contact_id: newDeal.contact_id || null }) });
+      const d = await res.json();
+      if (res.ok) {
+        setShowNew(false);
+        setNewDeal({ name: "", value: "", stage: "lead", contact_id: "", contact_name: "" });
+        setSelectedCollection(""); setCollectionContacts([]);
+        loadDeals();
+      } else {
+        alert("创建失败: " + (d.error || "未知错误"));
+      }
+    } catch (err: any) { alert("错误: " + err.message); }
   }
 
   const activeDeals = deals.filter(d => !["won", "lost"].includes(d.stage));
