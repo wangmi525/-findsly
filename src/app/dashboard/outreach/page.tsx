@@ -63,10 +63,17 @@ export default function OutreachPage() {
   const sendMessage = async () => {
     if (selected.length === 0) return;
     setLoading(true);
+    let sent = 0;
     for (const c of selected) {
-      await authFetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle }), headers: { "Content-Type": "application/json" } });
+      try {
+        const res = await authFetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle }), headers: { "Content-Type": "application/json" } });
+        const d = await res.json();
+        if (d.link) { window.open(d.link, "_blank"); sent++; }
+        else { sent++; }
+      } catch {}
     }
-    setResult(`已发送 ${selected.length} 条消息`);
+    setResult(`已发送 ${sent} 条消息`);
+    loadCollectionContacts(selectedCollection);
     setLoading(false);
   };
 
