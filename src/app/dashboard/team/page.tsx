@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { Plus, Shield, User, Trash2, Users, Crown } from "lucide-react";
 
@@ -10,13 +11,13 @@ export default function TeamPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/team").then(r => r.json()).then(d => {
+    authFetch("/api/team").then(r => r.json()).then(d => {
       setTeam(d.team); setMembers(d.members || []); setRole(d.role);
     });
   }, []);
 
   const createTeam = async () => {
-    const res = await fetch("/api/team", { method: "POST", body: JSON.stringify({ name: "My Team" }), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/team", { method: "POST", body: JSON.stringify({ name: "My Team" }), headers: { "Content-Type": "application/json" } });
     const d = await res.json();
     if (d.error) { setError(d.error); return; }
     setTeam(d.team); setRole("admin");
@@ -25,10 +26,10 @@ export default function TeamPage() {
   const invite = async () => {
     if (!inviteEmail) return;
     setError("");
-    const res = await fetch("/api/team", { method: "POST", body: JSON.stringify({ email: inviteEmail, team_id: team?.id }), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/team", { method: "POST", body: JSON.stringify({ email: inviteEmail, team_id: team?.id }), headers: { "Content-Type": "application/json" } });
     const d = await res.json();
     if (d.error) setError(d.error);
-    else { setInviteEmail(""); fetch("/api/team").then(r => r.json()).then(d => { setMembers(d.members); }); }
+    else { setInviteEmail(""); authFetch("/api/team").then(r => r.json()).then(d => { setMembers(d.members); }); }
   };
 
   if (!team) {

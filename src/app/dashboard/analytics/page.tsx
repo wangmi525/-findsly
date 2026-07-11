@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { TrendingUp, DollarSign, Users, Target } from "lucide-react";
 
@@ -9,15 +10,15 @@ export default function AnalyticsPage() {
     async function load() {
       const results: any = { revenue: 0, monthRevenue: 0, contacts: 0, deals: 0, won: 0 };
       try {
-        const revR = await fetch("/api/revenue");
+        const revR = await authFetch("/api/revenue");
         if (revR.ok) { const d = await revR.json(); results.revenue = d.total || 0; results.monthRevenue = d.thisMonth || 0; }
       } catch {}
       try {
-        const conR = await fetch("/api/contacts?limit=1");
+        const conR = await authFetch("/api/contacts?limit=1");
         if (conR.ok) { const d = await conR.json(); results.contacts = d.total || 0; }
       } catch {}
       try {
-        const dealR = await fetch("/api/deals");
+        const dealR = await authFetch("/api/deals");
         if (dealR.ok) { const d = await dealR.json(); results.deals = (d.data || []).length; results.won = (d.data || []).filter((x: any) => x.stage === "won").length; }
       } catch {}
       setData(results);

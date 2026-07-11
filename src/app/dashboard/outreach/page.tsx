@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { Send, Mail, Phone, MessageCircle, ExternalLink, Zap, Loader2 } from "lucide-react";
 
@@ -24,7 +25,7 @@ export default function OutreachPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
-  useEffect(() => { fetch("/api/contacts?limit=100").then(r => r.json()).then(d => setContacts(d.data || [])); }, []);
+  useEffect(() => { authFetch("/api/contacts?limit=100").then(r => r.json()).then(d => setContacts(d.data || [])); }, []);
 
   const toggleContact = (c: any) => {
     setSelected(s => s.find(x => x.id === c.id) ? s.filter(x => x.id !== c.id) : [...s, c]);
@@ -34,7 +35,7 @@ export default function OutreachPage() {
     if (selected.length === 0) return;
     setLoading(true);
     const c = selected[0];
-    const res = await fetch("/api/ai/generate", { method: "POST", body: JSON.stringify({ contactName: c.name, company: c.company, product: "our product/service", channel }), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/ai/generate", { method: "POST", body: JSON.stringify({ contactName: c.name, company: c.company, product: "our product/service", channel }), headers: { "Content-Type": "application/json" } });
     const d = await res.json();
     if (d.message) {
       if (channel === "email") {
@@ -56,7 +57,7 @@ export default function OutreachPage() {
     if (selected.length === 0) return;
     setLoading(true);
     const c = selected[0];
-    const res = await fetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle }), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle }), headers: { "Content-Type": "application/json" } });
     const d = await res.json();
     setResult(d.link || `Message sent via ${channel}`);
     setLoading(false);

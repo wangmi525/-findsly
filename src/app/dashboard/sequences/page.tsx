@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { Plus, ToggleLeft, ToggleRight, ChevronDown, GitBranch, Clock, Mail, Phone, Send, Trash2 } from "lucide-react";
 
@@ -10,7 +11,7 @@ export default function SequencesPage() {
 
   useEffect(() => { load(); }, []);
   async function load() {
-    const res = await fetch("/api/sequences"); const d = await res.json();
+    const res = await authFetch("/api/sequences"); const d = await res.json();
     setSequences(d.data || []);
   }
 
@@ -22,7 +23,7 @@ export default function SequencesPage() {
 
   const createSeq = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch("/api/sequences", { method: "POST", body: JSON.stringify({ ...newSeq, steps: JSON.stringify(newSeq.steps) }), headers: { "Content-Type": "application/json" } });
+    await authFetch("/api/sequences", { method: "POST", body: JSON.stringify({ ...newSeq, steps: JSON.stringify(newSeq.steps) }), headers: { "Content-Type": "application/json" } });
     setShowNew(false); setNewSeq({ name: "", steps: [] }); load();
   };
 

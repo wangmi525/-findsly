@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase-client";
@@ -33,7 +34,7 @@ export default function SettingsPage() {
   }, [router]);
 
   const saveProfile = async () => {
-    const res = await fetch("/api/profile", { method: "PATCH", body: JSON.stringify({ full_name: name, company }), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/profile", { method: "PATCH", body: JSON.stringify({ full_name: name, company }), headers: { "Content-Type": "application/json" } });
     if (res.ok) alert("Profile saved!");
   };
 

@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, DollarSign, MoreHorizontal } from "lucide-react";
@@ -16,11 +17,11 @@ export default function PipelinePage() {
   useEffect(() => { loadDeals(); loadContacts(); }, []);
 
   async function loadDeals() {
-    const res = await fetch("/api/deals"); const d = await res.json();
+    const res = await authFetch("/api/deals"); const d = await res.json();
     setDeals(d.data || []);
   }
   async function loadContacts() {
-    const res = await fetch("/api/contacts?limit=100"); const d = await res.json();
+    const res = await authFetch("/api/contacts?limit=100"); const d = await res.json();
     setContacts(d.data || []);
   }
 
@@ -31,7 +32,7 @@ export default function PipelinePage() {
 
   async function createDeal(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/deals", { method: "POST", body: JSON.stringify(newDeal), headers: { "Content-Type": "application/json" } });
+    const res = await authFetch("/api/deals", { method: "POST", body: JSON.stringify(newDeal), headers: { "Content-Type": "application/json" } });
     if (res.ok) { setShowNew(false); setNewDeal({ name: "", value: 0, stage: "lead", contact_id: "" }); loadDeals(); }
   }
 
