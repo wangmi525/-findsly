@@ -1,19 +1,12 @@
 "use client";
 import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
-import { Send, Mail, Phone, MessageCircle, ExternalLink, Zap, Loader2 } from "lucide-react";
+import { Send, Mail, MessageCircle, Zap, Loader2, Settings } from "lucide-react";
 
 const CHANNELS = [
-  { id: "email", label: "Email", icon: Mail, format: "email" },
-  { id: "whatsapp", label: "WhatsApp", icon: Phone, format: "link" },
-  { id: "telegram", label: "Telegram", icon: Send, format: "link" },
-  { id: "instagram", label: "Instagram", icon: ExternalLink, format: "link" },
-  { id: "facebook", label: "Facebook", icon: MessageCircle, format: "link" },
-  { id: "line", label: "LINE", icon: MessageCircle, format: "link" },
-  { id: "twitter", label: "Twitter/X", icon: ExternalLink, format: "link" },
-  { id: "discord", label: "Discord", icon: MessageCircle, format: "link" },
-  { id: "phone", label: "Phone", icon: Phone, format: "link" },
-  { id: "sms", label: "SMS", icon: Phone, format: "link" },
+  { id: "email", label: "Email", icon: Mail, desc: "通过 Resend API 发送邮件" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, desc: "通过 WhatsApp Business API 发送" },
+  { id: "telegram", label: "Telegram", icon: Send, desc: "通过 Telegram Bot 发送" },
 ];
 
 export default function OutreachPage() {
@@ -26,18 +19,29 @@ export default function OutreachPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
+  const [config, setConfig] = useState({ whatsapp_token: "", whatsapp_phone: "", telegram_bot_token: "" });
 
-  useEffect(() => { authFetch("/api/collections").then(r => r.json()).then(d => setCollections(d.data || [])); }, []);
+  useEffect(() => {
+    authFetch("/api/collections").then(r => r.json()).then(d => setCollections(d.data || []));
+    authFetch("/api/profile").then(r => r.json()).then(d => {
+      if (d?.whatsapp_token) setConfig({ whatsapp_token: d.whatsapp_token || "", whatsapp_phone: d.whatsapp_phone || "", telegram_bot_token: d.telegram_bot_token || "" });
+    });
+  }, []);
 
   async function loadCollectionContacts(collectionId: string) {
     setSelectedCollection(collectionId);
     setSelected([]);
-    setMessage("");
-    setSubject("");
+    setMessage(""); setSubject("");
     if (!collectionId) { setContacts([]); return; }
     const res = await authFetch("/api/contacts?collection_id=" + collectionId + "&limit=100");
     const d = await res.json();
     setContacts(d.data || []);
+  }
+
+  async function saveConfig() {
+    await authFetch("/api/profile", { method: "PATCH", body: JSON.stringify(config) });
+    setShowConfig(false);
   }
 
   const toggleContact = (c: any) => {
@@ -62,17 +66,17 @@ export default function OutreachPage() {
 
   const sendMessage = async () => {
     if (selected.length === 0) return;
+    if (channel !== "email" && !((config as any)[channel + "_token"])) { setShowConfig(true); return; }
     setLoading(true);
-    let sent = 0;
+    let sent = 0, failed = 0;
     for (const c of selected) {
       try {
-        const res = await authFetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle }), headers: { "Content-Type": "application/json" } });
+        const res = await authFetch("/api/send", { method: "POST", body: JSON.stringify({ channel, contact_id: c.id, subject, message, phone: c.phone, handle: c.instagram || c.telegram || c.facebook || c.twitter_handle, recipient_name: c.name, recipient_company: c.company }), headers: { "Content-Type": "application/json" } });
         const d = await res.json();
-        if (d.link) { window.open(d.link, "_blank"); sent++; }
-        else { sent++; }
-      } catch {}
+        if (d.error) { failed++; } else { sent++; }
+      } catch { failed++; }
     }
-    setResult(`已发送 ${sent} 条消息`);
+    setResult(`已发送 ${sent} 条${failed > 0 ? `，${failed} 条失败` : ""}`);
     loadCollectionContacts(selectedCollection);
     setLoading(false);
   };
@@ -81,43 +85,82 @@ export default function OutreachPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">外展活动</h1>
-        <p className="text-sm text-gray-500">通过任意渠道给联系人发消息</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">外展活动</h1>
+          <p className="text-sm text-gray-500">通过平台内渠道发送消息，客户信息完全保密</p>
+        </div>
+        {(channel === "whatsapp" || channel === "telegram") && (
+          <button onClick={() => setShowConfig(true)} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            <Settings className="h-4 w-4" /> 配置 {CHANNELS.find(c => c.id === channel)?.label}
+          </button>
+        )}
       </div>
+
+      {/* Config Modal */}
+      {showConfig && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowConfig(false)}>
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">{channel === "whatsapp" ? "配置 WhatsApp Business API" : "配置 Telegram Bot"}</h2>
+            {channel === "whatsapp" ? (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
+                  <p className="font-semibold mb-1">绑定步骤：</p>
+                  <p>1. 去 <a href="https://business.facebook.com" target="_blank" className="underline">Meta Business</a> 注册企业账号</p>
+                  <p>2. 创建 WhatsApp Business App → 获取 API Token</p>
+                  <p>3. 绑定电话号码（需验证）</p>
+                  <p>4. 将 Token 粘贴到下方</p>
+                  <p className="mt-1 font-semibold">费用：前 1000 条/月免费，超出 ~$0.02/条（Meta 收费）</p>
+                </div>
+                <input placeholder="WhatsApp Business API Token" value={config.whatsapp_token} onChange={e => setConfig({ ...config, whatsapp_token: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                <input placeholder="Your WhatsApp Number (带国家代码，如 +86138xxxx)" value={config.whatsapp_phone} onChange={e => setConfig({ ...config, whatsapp_phone: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
+                  <p className="font-semibold mb-1">绑定步骤：</p>
+                  <p>1. 打开 Telegram → 搜索 <b>@BotFather</b></p>
+                  <p>2. 发送 <b>/newbot</b> → 取名</p>
+                  <p>3. 复制 Bot Token 粘贴到下方</p>
+                  <p className="mt-1 font-semibold">费用：完全免费，无限制</p>
+                </div>
+                <input placeholder="Telegram Bot Token" value={config.telegram_bot_token} onChange={e => setConfig({ ...config, telegram_bot_token: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+              </div>
+            )}
+            <div className="mt-4 flex gap-2">
+              <button onClick={saveConfig} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">保存</button>
+              <button onClick={() => setShowConfig(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm">取消</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          {/* Step 1: Select Collection */}
           <h3 className="mb-3 font-semibold text-gray-900">1. 选择档案</h3>
           <select value={selectedCollection} onChange={e => loadCollectionContacts(e.target.value)} className="mb-4 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm">
             <option value="">选择档案查看联系人</option>
             {collections.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
           </select>
 
-          {/* Step 2: Select Contacts */}
           <h3 className="mb-3 font-semibold text-gray-900">2. 选择联系人 ({selected.length})</h3>
           <div className="mb-3 max-h-60 overflow-y-auto space-y-1">
-            {contacts.length === 0 && selectedCollection ? (
-              <p className="py-4 text-center text-sm text-gray-400">该档案没有联系人</p>
-            ) : contacts.length === 0 ? (
-              <p className="py-4 text-center text-sm text-gray-400">请先选择一个档案</p>
-            ) : (
-              contacts.map(c => (
-                <button key={c.id} onClick={() => toggleContact(c)} className={`w-full rounded-lg p-2 text-left text-sm transition ${selected.find(x => x.id === c.id) ? "bg-blue-50 border border-blue-200" : "border border-transparent hover:bg-gray-50"}`}>
-                  <p className="font-medium text-gray-900">{c.name}</p>
-                  <p className="text-xs text-gray-400">{c.company} · {c.title || ""}</p>
-                </button>
-              ))
-            )}
+            {contacts.length === 0 ? (
+              <p className="py-4 text-center text-sm text-gray-400">{selectedCollection ? "该档案没有联系人" : "请先选择一个档案"}</p>
+            ) : contacts.map(c => (
+              <button key={c.id} onClick={() => toggleContact(c)} className={`w-full rounded-lg p-2 text-left text-sm transition ${selected.find(x => x.id === c.id) ? "bg-blue-50 border border-blue-200" : "border border-transparent hover:bg-gray-50"}`}>
+                <p className="font-medium text-gray-900">{c.name}</p>
+                <p className="text-xs text-gray-400">{c.company} · {c.title || ""}</p>
+              </button>
+            ))}
           </div>
 
-          {/* Step 3: Choose Channel */}
           <h3 className="mb-3 font-semibold text-gray-900">3. 选择渠道</h3>
-          <div className="grid grid-cols-5 gap-2 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             {CHANNELS.map(ch => (
-              <button key={ch.id} onClick={() => setChannel(ch.id)} className={`flex flex-col items-center gap-1 rounded-lg p-2 text-xs transition ${channel === ch.id ? "bg-blue-50 border border-blue-200 text-blue-700" : "border border-gray-100 hover:bg-gray-50 text-gray-500"}`}>
+              <button key={ch.id} onClick={() => setChannel(ch.id)} className={`flex flex-col items-center gap-1 rounded-lg p-3 text-xs transition ${channel === ch.id ? "bg-blue-50 border border-blue-200 text-blue-700" : "border border-gray-100 hover:bg-gray-50 text-gray-500"}`}>
                 <ch.icon className="h-5 w-5" /> {ch.label}
+                <span className="text-[10px] text-gray-400">{ch.desc}</span>
               </button>
             ))}
           </div>
@@ -129,7 +172,7 @@ export default function OutreachPage() {
             </div>
           )}
           {!isEmail && (
-            <textarea placeholder="Message..." value={message} onChange={e => setMessage(e.target.value)} rows={4} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+            <textarea placeholder="Message..." value={message} onChange={e => setMessage(e.target.value)} rows={6} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           )}
 
           <div className="mt-4 flex gap-2">
@@ -152,6 +195,7 @@ export default function OutreachPage() {
               <div className="space-y-2 text-sm">
                 <p className="text-xs text-gray-400">收件人: {selected.map(c => c.name).join(", ")}</p>
                 <p className="text-xs text-gray-400">渠道: {CHANNELS.find(ch => ch.id === channel)?.label}</p>
+                <p className="text-xs text-green-600">🔒 客户联系方式不会被显示</p>
                 {subject && <p className="font-semibold text-gray-900">{subject}</p>}
                 <p className="whitespace-pre-wrap text-gray-700">{message || "(点击 AI 生成自动生成消息)"}</p>
               </div>
