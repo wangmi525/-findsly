@@ -6,10 +6,9 @@ import { getSupabase } from "@/lib/supabase-client";
 import { User, Shield, Users, Crown, CreditCard, LogOut, Zap } from "lucide-react";
 
 const PLANS = [
-  { name: "Starter", price: "$49/mo", search: "600", channels: "5" },
-  { name: "Pro", price: "$99/mo", search: "2,000", channels: "8" },
-  { name: "Growth", price: "$199/mo", search: "5,000", channels: "10 (team)" },
-  { name: "Scale", price: "$399/mo", search: "15,000", channels: "10 (team)" },
+  { name: "Starter", price: "$29/mo", search: "500", channels: "3 (Email+WA+TG)" },
+  { name: "Pro", price: "$79/mo", search: "2,500", channels: "3 (Email+WA+TG)" },
+  { name: "Growth", price: "$199/mo", search: "10,000", channels: "3 (Email+WA+TG)" },
 ];
 
 export default function SettingsPage() {

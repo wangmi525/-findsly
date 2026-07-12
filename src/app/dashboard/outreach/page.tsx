@@ -115,7 +115,6 @@ export default function OutreachPage() {
 
   const sendMessage = async () => {
     if (selected.length === 0) return;
-    if (channel !== "email" && !((config as any)[channel + "_token"])) { setShowConfig(true); return; }
     setLoading(true);
     let sent = 0, failed = 0;
     for (const c of selected) {
