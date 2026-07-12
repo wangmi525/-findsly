@@ -5,7 +5,7 @@ import { Search, Send, BarChart3, Globe, Zap, Shield, ArrowRight, Menu, X, Chevr
 
 const plans = [
   {
-    name: "Free", price: 0, yearly: 0, search: "50/mo", features: ["50 contacts/mo", "20 emails/mo", "Email + WhatsApp + Telegram", "Basic CRM", "5 AI-generated messages", "Email warmup"],
+    name: "Free", price: 0, yearly: 0, search: "50/mo", features: ["50 contacts/mo", "20 emails/mo", "10 WhatsApp msgs", "Unlimited Telegram", "5 AI generations", "Basic CRM", "Email warmup"],
     color: "border-gray-200", btn: "bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-900"
   },
   {
