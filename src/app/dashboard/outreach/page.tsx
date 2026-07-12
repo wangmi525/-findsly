@@ -183,11 +183,11 @@ export default function OutreachPage() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
                   <p className="font-semibold mb-1">Setup steps:</p>
-                  <p>1. 去 <a href="https://business.facebook.com" target="_blank" className="underline">Meta Business</a> 注册企业账号</p>
+                  <p>1. Go to <a href="https://business.facebook.com" target="_blank" className="underline">Meta Business</a> and register</p>
                   <p>2. Create WhatsApp Business App → Get API Token</p>
                   <p>3. Link phone number (verification required)</p>
-                  <p>4. 将 Token 粘贴到下方</p>
-                  <p className="mt-1 font-semibold">费用：前 1000 /月免费，超出 ~$0.02/</p>
+                  <p>4. Paste the Token below</p>
+                  <p className="mt-1 font-semibold">Cost: First 1000/month free, then ~$0.02/msg</p>
                 </div>
                 <input placeholder="WhatsApp Business API Token" value={config.whatsapp_token} onChange={e => setConfig({ ...config, whatsapp_token: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
                 <input placeholder="Your phone number (e.g. +1234567890)" value={config.whatsapp_phone} onChange={e => setConfig({ ...config, whatsapp_phone: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
@@ -196,7 +196,7 @@ export default function OutreachPage() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
                   <p className="font-semibold mb-1">Setup steps:</p>
-                  <p>1. 打开 Telegram → Search <b>@BotFather</b></p>
+                  <p>1. Open Telegram → Search <b>@BotFather</b></p>
                   <p>2. Send <b>/newbot</b> → Name your Bot</p>
                   <p>3. Copy Bot Token and paste below</p>
                   <p className="mt-1 font-semibold">Cost: Completely free, unlimited</p>
@@ -220,7 +220,7 @@ export default function OutreachPage() {
             {collections.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
           </select>
 
-          <h3 className="mb-3 font-semibold text-gray-900">2. Select contacts ({selected.length}/{contacts.length} 可选)</h3>
+          <h3 className="mb-3 font-semibold text-gray-900">2. Select contacts ({selected.length}/{contacts.length} available)</h3>
           <div className="mb-3 max-h-60 overflow-y-auto space-y-1">
             {contacts.length === 0 ? (
               <p className="py-4 text-center text-sm text-gray-400">{selectedCollection ? `No contacts with ${CHANNELS.find(c => c.id === channel)?.label} channel in this collection` : "Select a collection first"}</p>
@@ -265,7 +265,7 @@ export default function OutreachPage() {
 
           <div className="mt-4 flex gap-2">
             <button onClick={generateAI} disabled={loading || selected.length === 0} className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-700 hover:bg-purple-100 disabled:opacity-50">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />} AI 生成
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />} AI Generate
             </button>
             <button onClick={sendMessage} disabled={loading || selected.length === 0 || (!isEmail && !message)} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50">
               <Send className="h-4 w-4" /> Send
@@ -321,7 +321,7 @@ export default function OutreachPage() {
                   {replyingTo && (
                     <div className="mb-2 flex items-center gap-2 text-xs text-gray-500">
                       <Reply className="h-3 w-3" />
-                      Reply {replyingTo.channel} 消息
+                      Reply {replyingTo.channel} message
                       <button onClick={() => setReplyingTo(null)} className="text-red-500 hover:underline">Cancel</button>
                     </div>
                   )}

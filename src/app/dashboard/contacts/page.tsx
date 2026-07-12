@@ -8,7 +8,7 @@ const TAGS = [
   { value: "vip", label: "VIP", color: "bg-purple-100 text-purple-700" },
   { value: "potential", label: "Potential", color: "bg-blue-100 text-blue-700" },
   { value: "followup", label: "Follow up", color: "bg-amber-100 text-amber-700" },
-  { value: "won", label: "已成交", color: "bg-green-100 text-green-700" },
+  { value: "won", label: "Won", color: "bg-green-100 text-green-700" },
   { value: "cold", label: "Cold", color: "bg-gray-100 text-gray-600" },
 ];
 
@@ -220,7 +220,7 @@ export default function ContactsPage() {
               <button onClick={() => moveToCollection(Array.from(selected), "")} className="w-full rounded bg-white border border-gray-200 px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-50 text-left">Remove from collection</button>
               {collections.map(c => (
                 <button key={c.id} onClick={() => moveToCollection(Array.from(selected), c.id)} className="w-full rounded bg-white border border-gray-200 px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-50 text-left flex items-center gap-1">
-                  {c.icon} 移入「{c.name}」
+                  {c.icon} Move to {c.name}
                 </button>
               ))}
             </div>
@@ -256,8 +256,8 @@ export default function ContactsPage() {
                 <button onClick={() => { setShowSearch(false); setResults([]); }} className="rounded-lg p-2 hover:bg-gray-100"><X className="h-5 w-5" /></button>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 mb-4">
-                <input placeholder="例如: yoga studio California" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && runSearch()} className="rounded-lg border border-gray-200 px-4 py-3 text-sm" autoFocus />
-                <input placeholder="目标市场（可选）" value={target} onChange={e => setTarget(e.target.value)} onKeyDown={e => e.key === "Enter" && runSearch()} className="rounded-lg border border-gray-200 px-4 py-3 text-sm" />
+                <input placeholder="e.g. yoga studio California" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && runSearch()} className="rounded-lg border border-gray-200 px-4 py-3 text-sm" autoFocus />
+                <input placeholder="Target market (optional)" value={target} onChange={e => setTarget(e.target.value)} onKeyDown={e => e.key === "Enter" && runSearch()} className="rounded-lg border border-gray-200 px-4 py-3 text-sm" />
               </div>
               <button onClick={runSearch} disabled={searching || !query.trim()} className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 flex items-center justify-center gap-2">
                 {searching ? <><Loader2 className="h-4 w-4 animate-spin" /> Searching...</> : <><Search className="h-4 w-4" /> Search</>}
@@ -271,7 +271,7 @@ export default function ContactsPage() {
                         <p className="text-sm font-medium text-gray-900 truncate">{r.name} — {r.title || ""}</p>
                         <p className="text-xs text-gray-400 truncate">{r.company || ""} | {r.email || "No email"} | {r.source}</p>
                       </div>
-                      <button onClick={() => addContact(r)} className="ml-3 shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500">添加</button>
+                      <button onClick={() => addContact(r)} className="ml-3 shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500">Add</button>
                     </div>
                   ))}
                 </div>
@@ -305,9 +305,9 @@ export default function ContactsPage() {
           <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none">
             <option value="">All Status</option>
             <option value="new">New</option>
-            <option value="contacted">已联系</option>
+            <option value="contacted">Contacted</option>
             <option value="replied">Replied</option>
-            <option value="won">已成交</option>
+            <option value="won">Won</option>
           </select>
         </div>
 
@@ -321,16 +321,16 @@ export default function ContactsPage() {
             </div>
           ) : (
             <>
-              <div className="px-4 pt-3 text-xs text-gray-400">评分说明：🟢 80+ 高优先 · 🟡 50-79 中优先 · ⚪ &lt;50 低优先</div>
+              <div className="px-4 pt-3 text-xs text-gray-400">Score guide：🟢 80+ High · 🟡 50-79 Medium · ⚪ &lt;50 Low</div>
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-gray-100 bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 w-10"><input type="checkbox" checked={selected.size === contacts.length && contacts.length > 0} onChange={toggleSelectAll} className="rounded" /></th>
                     <th className="px-4 py-3 font-semibold text-gray-600">Name</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">公司</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">评分</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">标签</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">状态</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">Company</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">Score</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">Tags</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">Status</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -358,11 +358,11 @@ export default function ContactsPage() {
                               {TAGS.map(t => (
                                 <button key={t.value} onClick={() => saveTag(c.id, t.value)} className={"rounded-full px-2 py-0.5 text-xs " + t.color + " hover:opacity-80"}>{t.label}</button>
                               ))}
-                              <button onClick={() => saveTag(c.id, "")} className="text-xs text-gray-400 hover:text-red-500 ml-1">清除</button>
+                              <button onClick={() => saveTag(c.id, "")} className="text-xs text-gray-400 hover:text-red-500 ml-1">Clear</button>
                             </div>
                           ) : (
                             <button onClick={() => setTaggingId(c.id)} className={"rounded-full px-2 py-0.5 text-xs cursor-pointer hover:opacity-80 " + (tagInfo ? tagInfo.color : "bg-gray-100 text-gray-500")}>
-                              {tagInfo ? tagInfo.label : "+ 标签"}
+                              {tagInfo ? tagInfo.label : "+ Tags"}
                             </button>
                           )}
                         </td>
@@ -379,9 +379,9 @@ export default function ContactsPage() {
 
         {total > 50 && (
           <div className="mt-4 flex items-center justify-between">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50">上一页</button>
-            <span className="text-sm text-gray-500">第 {page} 页</span>
-            <button disabled={page * 50 >= total} onClick={() => setPage(p => p + 1)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50">下一页</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50">Prev</button>
+            <span className="text-sm text-gray-500">Page {page} </span>
+            <button disabled={page * 50 >= total} onClick={() => setPage(p => p + 1)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50">Next</button>
           </div>
         )}
       </div>
