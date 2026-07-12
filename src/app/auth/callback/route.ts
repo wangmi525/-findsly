@@ -27,15 +27,18 @@ export async function GET(req: Request) {
   }
 
   if (data.session) {
-    const response = NextResponse.redirect(`${origin}/dashboard`);
-    response.cookies.set("sb-access-token", data.session.access_token, {
-      path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+    const projectRef = supabaseUrl.replace("https://", "").replace(".supabase.co", "");
+    const cookieName = `sb-${projectRef}-auth-token`;
+    const cookieValue = JSON.stringify({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_in: data.session.expires_in,
+      expires_at: data.session.expires_at,
+      token_type: "bearer",
     });
-    response.cookies.set("sb-refresh-token", data.session.refresh_token, {
+
+    const response = NextResponse.redirect(`${origin}/dashboard`);
+    response.cookies.set(cookieName, cookieValue, {
       path: "/",
       httpOnly: true,
       secure: true,
