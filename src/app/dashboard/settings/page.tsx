@@ -3,12 +3,21 @@ import { authFetch } from "@/lib/auth-fetch";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase-client";
-import { User, Shield, Users, Crown, CreditCard, LogOut, Zap } from "lucide-react";
+import { Crown, Check } from "lucide-react";
 
 const PLANS = [
-  { name: "Starter", price: "$29/mo", search: "500", channels: "3 (Email+WA+TG)" },
-  { name: "Pro", price: "$79/mo", search: "2,500", channels: "3 (Email+WA+TG)" },
-  { name: "Growth", price: "$199/mo", search: "10,000", channels: "3 (Email+WA+TG)" },
+  {
+    name: "Starter", price: "$29", planId: "starter",
+    features: ["500 emails/mo", "50 WhatsApp msgs", "Unlimited Telegram", "50 AI generations", "5 automation sequences", "CSV import", "Email templates", "Email warmup", "Email tracking"],
+  },
+  {
+    name: "Pro", price: "$79", planId: "pro", popular: true,
+    features: ["2,500 emails/mo", "200 WhatsApp msgs", "Unlimited Telegram", "Unlimited AI", "20 automation sequences", "A/B testing", "Full CRM + Pipeline", "Advanced analytics", "Priority support"],
+  },
+  {
+    name: "Growth", price: "$199", planId: "growth",
+    features: ["10,000 emails/mo", "500 WhatsApp msgs", "Unlimited Telegram", "Unlimited AI", "Unlimited sequences", "Team (10 seats)", "API access", "Full pipeline & CRM", "Dedicated support"],
+  },
 ];
 
 export default function SettingsPage() {
@@ -17,6 +26,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -37,6 +47,26 @@ export default function SettingsPage() {
     if (res.ok) alert("Profile saved!");
   };
 
+  const checkout = async (planId: string) => {
+    setLoading(true);
+    try {
+      const res = await authFetch("/api/checkout", {
+        method: "POST",
+        body: JSON.stringify({ plan: planId, userId: user?.id, email: user?.email }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        alert(data.error);
+      }
+    } catch (e) {
+      alert("Checkout failed. Please try again.");
+    }
+    setLoading(false);
+  };
+
   const plan = profile?.plan || "free";
   const used = profile?.search_used || 0;
   const limit = profile?.search_limit || 50;
@@ -51,7 +81,7 @@ export default function SettingsPage() {
           <div><label className="block text-xs font-semibold text-gray-700 mb-1">Name</label><input value={name} onChange={e => setName(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-xs font-semibold text-gray-700 mb-1">Company</label><input value={company} onChange={e => setCompany(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-xs font-semibold text-gray-700 mb-1">Email</label><input disabled value={user?.email || ""} className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400" /></div>
-          <button onClick={saveProfile} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Save</button>
+          <button onClick={saveProfile} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save</button>
         </div>
       </div>
 
@@ -61,15 +91,31 @@ export default function SettingsPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100"><Crown className="h-6 w-6 text-blue-600" /></div>
           <div><p className="text-lg font-bold text-gray-900 capitalize">{plan}</p><p className="text-sm text-gray-500">{used}/{limit} searches used this month</p></div>
         </div>
-        <div className="grid gap-2 sm:grid-cols-4">
-          {PLANS.map((p, i) => (
-            <div key={i} className={`rounded-lg border p-3 text-center ${plan === p.name.toLowerCase() ? "border-blue-300 bg-blue-50" : "border-gray-200 hover:border-gray-300 cursor-pointer"}`}
-              onClick={() => plan !== p.name.toLowerCase() && alert("Redirecting to checkout...")}>
-              <p className="text-sm font-bold text-gray-900">{p.name}</p>
-              <p className="text-lg font-extrabold text-gray-900">{p.price}</p>
-              <p className="text-xs text-gray-400">{p.search} searches · {p.channels} channels</p>
-            </div>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PLANS.map((p, i) => {
+            const isCurrent = plan === p.planId;
+            return (
+              <div key={i} className={`relative rounded-xl border p-4 ${isCurrent ? "border-blue-300 bg-blue-50" : p.popular ? "border-blue-500 ring-2 ring-blue-500" : "border-gray-200 hover:border-gray-300"}`}>
+                {p.popular && !isCurrent && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-0.5 text-[10px] font-bold text-white">Most Popular</div>}
+                <p className="text-sm font-bold text-gray-900">{p.name}</p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">{p.price}<span className="text-sm font-normal text-gray-400">/mo</span></p>
+                <ul className="mt-3 space-y-1.5">
+                  {p.features.map((f, j) => (
+                    <li key={j} className="flex items-start gap-1.5 text-xs text-gray-600">
+                      <Check className="mt-0.5 h-3 w-3 shrink-0 text-green-500" />{f}
+                    </li>
+                  ))}
+                </ul>
+                {isCurrent ? (
+                  <div className="mt-3 w-full rounded-lg bg-blue-50 py-2 text-center text-xs font-semibold text-blue-600">Current Plan</div>
+                ) : (
+                  <button onClick={() => checkout(p.planId)} disabled={loading} className="mt-3 w-full rounded-lg bg-blue-600 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50">
+                    {loading ? "Loading..." : "Upgrade"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
