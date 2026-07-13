@@ -182,12 +182,13 @@ export default function OutreachPage() {
             {channel === "whatsapp" ? (
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
-                  <p className="font-semibold mb-1">Setup steps:</p>
-                  <p>1. Go to <a href="https://business.facebook.com" target="_blank" className="underline">Meta Business</a> and register</p>
+                  <p className="font-semibold mb-1">Use your own WhatsApp Business API credentials</p>
+                  <p>Findsly does not provide shared WhatsApp sending. You must use your own Meta Business account and phone number.</p>
+                  <p className="mt-1">1. Go to <a href="https://business.facebook.com" target="_blank" className="underline">Meta Business</a> and register</p>
                   <p>2. Create WhatsApp Business App → Get API Token</p>
-                  <p>3. Link phone number (verification required)</p>
-                  <p>4. Paste the Token below</p>
-                  <p className="mt-1 font-semibold">Cost: First 1000/month free, then ~$0.02/msg</p>
+                  <p>3. Link and verify your own phone number</p>
+                  <p>4. Paste the Token and Phone Number below</p>
+                  <p className="mt-1 font-semibold">Cost: billed by Meta directly, ~$0.02/conversation</p>
                 </div>
                 <input placeholder="WhatsApp Business API Token" value={config.whatsapp_token} onChange={e => setConfig({ ...config, whatsapp_token: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
                 <input placeholder="Your phone number (e.g. +1234567890)" value={config.whatsapp_phone} onChange={e => setConfig({ ...config, whatsapp_phone: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
@@ -195,11 +196,12 @@ export default function OutreachPage() {
             ) : (
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
-                  <p className="font-semibold mb-1">Setup steps:</p>
-                  <p>1. Open Telegram → Search <b>@BotFather</b></p>
+                  <p className="font-semibold mb-1">Use your own Telegram Bot</p>
+                  <p>Findsly does not provide shared Telegram sending. You must create and use your own bot.</p>
+                  <p className="mt-1">1. Open Telegram → Search <b>@BotFather</b></p>
                   <p>2. Send <b>/newbot</b> → Name your Bot</p>
                   <p>3. Copy Bot Token and paste below</p>
-                  <p className="mt-1 font-semibold">Cost: Completely free, unlimited</p>
+                  <p className="mt-1 font-semibold">Cost: free, but you are responsible for your bot</p>
                 </div>
                 <input placeholder="Telegram Bot Token" value={config.telegram_bot_token} onChange={e => setConfig({ ...config, telegram_bot_token: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
               </div>
