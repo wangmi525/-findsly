@@ -24,15 +24,47 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    async function load() {
-      const supabase = getSupabase();
-      const { data: { user: u } } = await supabase.auth.getUser();
-      if (!u) { router.push("/auth"); return; }
+    const supabase = getSupabase();
+    let unsubscribe: (() => void) | null = null;
+
+    async function loadProfile(u: any) {
       setUser(u);
       const { data: p } = await supabase.from("user_profiles").select("*").eq("user_id", u.id).single();
       setProfile(p || { plan: "free", search_used: 0, search_limit: 50 });
     }
-    load();
+
+    async function init() {
+      // Check existing session first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await loadProfile(session.user);
+        return;
+      }
+
+      // Wait for auth state to settle (handles redirect from OAuth callback)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+        if (newSession?.user) {
+          unsubscribe?.();
+          await loadProfile(newSession.user);
+        }
+      });
+      unsubscribe = subscription.unsubscribe.bind(subscription);
+
+      // Fallback: if still no session after 2s, redirect to login
+      setTimeout(async () => {
+        unsubscribe?.();
+        const { data: { session: finalSession } } = await supabase.auth.getSession();
+        if (!finalSession?.user) {
+          router.push("/auth");
+        }
+      }, 2000);
+    }
+
+    init();
+
+    return () => {
+      unsubscribe?.();
+    };
   }, [router]);
 
   const handleLogout = async () => {
